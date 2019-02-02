@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LoggedIn</title>
+    <script>
+        window.onload = function() {
+            console.log(window.location.toString());
+        };
+
+        function goToPermissionedPage() {
+            window.location = "permissionedPage.html?" + window.location.toString().split("?")[1];
+        }
+    </script>
+
+</head>
+<body>
+You have successfully logged in
+
+<button onclick="goToPermissionedPage()">Go To Permission Page</button>
+</body>
+</html>
