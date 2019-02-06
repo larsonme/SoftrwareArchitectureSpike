@@ -19,31 +19,43 @@ var config =
                 database: 'spikedatabase',
                 encrypt: true
             }
-    }
+    };
 var connection = new Connection(config);
-
+//
 // Attempt to connect and execute queries if connection goes through
 connection.on('connect', function (err) {
         if (err) {
             console.log(err)
         }
         else {
-            console.log("Successfully connected")
-            queryDatabase()
+            console.log("Successfully connected");
         }
     }
 );
-
- function queryDatabase()
-{
-    console.log('Reading rows from the Table...');
-
-    // Read all rows from table
+function createUser(user){
     var request = new Request(
-        "SELECT * FROM [USER]",
+        "INSERT INTO [USER] (username, displayName, email, token) VALUES('" + user.getEmail() + "'" +
+        ", '" + user.getName() + "', '" + user.getEmail() + "', '"+ user.getToken() + "'",
         function(err, rowCount, rows)
         {
             console.log(rowCount + ' row(s) returned');
+
+            process.exit();
+        }
+    );
+}
+function checkForUser(user) {
+    console.log('Check for User...');
+
+    // Read all rows from table
+    var request = new Request(
+        "SELECT * FROM [USER] WHERE email = ''" + user.getEmail() +"'",
+        function(err, rowCount, rows)
+        {
+            console.log(rowCount + ' row(s) returned');
+            if(rowCount == 0){
+                createUser();
+            }
             process.exit();
         }
     );
@@ -54,4 +66,5 @@ connection.on('connect', function (err) {
         });
     });
     connection.execSql(request);
+
 }

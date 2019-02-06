@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script type="text/javascript" src="index.js"></script>
+
     <meta name="google-signin-client_id"
-          content="ENTER CONTENT KEY HERE">
-    <meta name="google-site-verification" content="sOePc1ausWnsUShRluGqese37YP0QAgR6lQs-wgEmtY"/>
+          content="">
+    <meta name="google-site-verification" content=""/>
+
     <script>
         function onSignIn(googleUser) {
             //TODO Query db to see if the user's email is there already.  If so, update token
@@ -18,13 +21,16 @@
             console.log('Name: ' + profile.getName());
             console.log('Image URL: ' + profile.getImageUrl());
             console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-            window.location = "homepage.html?userId=" + userId;
+            checkForUser(profile);
 
+            // window.location = "homepage.html?userId=" + userId;
         }
+
     </script>
 </head>
 <body>
 <div class="g-signin2" data-onsuccess="onSignIn"></div>
+<button onclick="onSignIn()"></button>
 Hello html
 </body>
 
