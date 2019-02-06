@@ -71,6 +71,11 @@ function getFile(localPath, res, mimeType) {
 }
 console.log("Server running at http://localhost:%d", port);
 
+console.log('Username: ' + process.env.APPSETTINGS_DB_USERNAME);
+console.log('Password: ' + process.env.APPSETTINGS_DB_PASSWORD);
+console.log('Username: ' + process.env.DB_USERNAME);
+console.log('Password: ' + process.env.DB_PASSWORD);
+
 //
 // var server = http.createServer(function(request, response) {
 //
