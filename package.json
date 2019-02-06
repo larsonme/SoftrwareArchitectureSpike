@@ -6,10 +6,11 @@
     "license": "MIT",
     "author": "Microsoft",
     "scripts": {
-        "start": "npm install & node index.js"
+        "start": "node index.js"
     },
     "dependencies": {
         "async": "^2.6.1",
+        "express": "^4.16.4",
         "index.js": "0.0.3",
         "node": "^11.9.0",
         "tedious": "^4.1.3"
