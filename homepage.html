@@ -9,7 +9,18 @@
         };
 
         function goToPermissionedPage() {
-            window.location = "permissionedPage.html?" + window.location.toString().split("?")[1];
+            var userId = window.location.toString().split("userId=")[1];
+            console.log(userId);
+            $.get("permission",
+                {
+                    permissionName: 'admin',
+                    userId: userId
+                },
+                function(data, status){
+                    alert(data);
+                    // window.location = "permissionedPage.html?userId=" + userId;
+                });
+
         }
     </script>
 

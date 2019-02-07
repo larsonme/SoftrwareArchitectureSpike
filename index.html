@@ -16,8 +16,7 @@
             $.get("userId",
                 {
                     userEmail: profile.getEmail(),
-                    userName: profile.getName(),
-                    userToken: googleUser.getAuthResponse().id_token
+                    userName: profile.getName()
                 },
             function(data, status){
                 alert(data);
