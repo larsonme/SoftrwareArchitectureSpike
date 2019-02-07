@@ -25,10 +25,9 @@ var config =
     };
 var pool = new ConnectionPool(poolConfig, config);
 
-
 function createUser(email, name, res) {
     pool.acquire(function (err, connection) {
-        if(err) {
+        if (err) {
             console.log(err);
         }
         var request = new Request("INSERT INTO dbo.[User] (username, displayName, email) OUTPUT INSERTED.id VALUES (@email, @name, @email);", function (err) {
@@ -59,14 +58,14 @@ function createUser(email, name, res) {
 function checkForUser(email, name, res) {
 
     pool.acquire(function (err, connection) {
-        if(err) {
+        if (err) {
             console.log(err);
         }
         var request = new Request(
             //Need to return userid from this
             "SELECT * FROM [USER] WHERE email = '" + email + "'",
             function (err, rowCount, rows) {
-                if(err){
+                if (err) {
                     console.log(err);
                 }
                 if (rowCount === 0) {
@@ -95,9 +94,8 @@ function checkForUser(email, name, res) {
 
 function checkUserForPermission(permissionName, userId, res) {
 
-    // Read all rows from table
     pool.acquire(function (err, connection) {
-        if(err) {
+        if (err) {
             console.log(err);
         }
         var request = new Request(
@@ -106,7 +104,7 @@ function checkUserForPermission(permissionName, userId, res) {
             "JOIN Permission permission " +
             "ON permission.id = userToPermission.permissionId " +
             "WHERE permission.name = '" + permissionName + "'", function (err) {
-                if(err){
+                if (err) {
                     console.log(err);
                 }
                 connection.release();
@@ -186,16 +184,19 @@ app.get('/permissionedPage.html', function (req, res) {
         res.end();
     });
 });
-//If they don't have the permissioned, return this
-// fs.readFile('./errorPage.html', function (err, data) {
-//     if (err) {
-//         throw err;
-//     }
-//     res.writeHead(200, {"Content-Type": "text/html"});
-//     res.write(data);
-//     res.end();
-// });
-// });
+app.get('/errorPage.html', function (req, res) {
+    //Check database for userid and if they have the right permission for this page
+    //If they do, return permissionedPage
+    console.log(req.query);
+    fs.readFile('./errorPage.html', function (err, data) {
+        if (err) {
+            throw err;
+        }
+        res.writeHead(200, {"Content-Type": "text/html"});
+        res.write(data);
+        res.end();
+    });
+});
 app.listen(port);
 
 console.log("Server running at http://localhost:%d", port);

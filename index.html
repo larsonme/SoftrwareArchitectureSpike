@@ -19,7 +19,6 @@
                     userName: profile.getName()
                 },
             function(data, status){
-                alert(data);
                 window.location = "homepage.html?userId=" + data;
             });
 
@@ -31,8 +30,6 @@
 </head>
 <body>
 <div class="g-signin2" data-onsuccess="onSignIn"></div>
-<button onclick="onSignIn()"></button>
-Hello html
 </body>
 
 </html>
