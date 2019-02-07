@@ -2,21 +2,20 @@ var fs = require("fs");
 var port = process.env.PORT || 8080;
 var express = require('express');
 var app = express();
-var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
-var running = false;
+var ConnectionPool = require('tedious-connection-pool');
+var poolConfig = {
+    min: 2,
+    max: 4,
+    log: true
+};
 var config =
     {
-        authentication:
-            {
-                type: 'default',
-                options:
-                    {
+
                         userName: '',
-                        password: ''
-                    }
-            },
+                        password: '',
+
         server: 'softwarearchitecture2019.database.windows.net',
         options:
             {
@@ -24,109 +23,115 @@ var config =
                 encrypt: true
             }
     };
-var connection = new Connection(config);
-//
-// Attempt to connect and execute queries if connection goes through
-connection.on('connect', function (err) {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            console.log("Successfully connected");
-        }
-    }
-);
+var pool = new ConnectionPool(poolConfig, config);
+
 
 function createUser(email, name, res) {
-    request = new Request("INSERT INTO dbo.[User] (username, displayName, email) OUTPUT INSERTED.id VALUES (@email, @name, @email);", function (err) {
-        if (err) {
+    pool.acquire(function (err, connection) {
+        if(err) {
             console.log(err);
         }
-    });
-    request.addParameter('email', TYPES.NVarChar, email);
-    request.addParameter('name', TYPES.NVarChar, name);
-    request.on('row', function (columns) {
-        columns.forEach(function (column) {
-            if (column.value === null) {
-                console.log('NULL');
-            } else {
-                res.write(column.value.toString());
-                res.end();
+        var request = new Request("INSERT INTO dbo.[User] (username, displayName, email) OUTPUT INSERTED.id VALUES (@email, @name, @email);", function (err) {
+            if (err) {
+                console.log(err);
             }
+            connection.release();
         });
-    });
-    request.on('requestCompleted', function () {
-        running = false;
+        request.addParameter('email', TYPES.NVarChar, email);
+        request.addParameter('name', TYPES.NVarChar, name);
+        request.on('row', function (columns) {
+            columns.forEach(function (column) {
+                console.log("In foreach");
+                if (column.value === null) {
+                    console.log('NULL');
+                } else {
+                    res.write(column.value.toString());
+                    res.end();
+                }
+            });
+        });
+        connection.execSql(request);
     });
 
-    running = true;
-    connection.execSql(request);
 
 }
 
 function checkForUser(email, name, res) {
 
-    // Read all rows from table
-    var request = new Request(
-        //Need to return userid from this
-        "SELECT * FROM [USER] WHERE email = '" + email + "'",
-        function (err, rowCount, rows) {
-            if (rowCount === 0) {
-                createUser(email, name, res);
-            }
-            process.exit();
+    pool.acquire(function (err, connection) {
+        if(err) {
+            console.log(err);
         }
-    );
-
-    request.on('row', function (columns) {
-        columns.forEach(function (column) {
-            console.log("%s\t%s", column.metadata.colName, column.value);
-            if (column.metadata.colName == 'id') {
-                res.write(column.value.toString());
-                res.end();
+        var request = new Request(
+            //Need to return userid from this
+            "SELECT * FROM [USER] WHERE email = '" + email + "'",
+            function (err, rowCount, rows) {
+                if(err){
+                    console.log(err);
+                }
+                if (rowCount === 0) {
+                    console.log("Creating user");
+                    createUser(email, name, res);
+                }
+                connection.release();
             }
+        );
+
+        request.on('row', function (columns) {
+            columns.forEach(function (column) {
+                console.log("%s\t%s", column.metadata.colName, column.value);
+                if (column.metadata.colName == 'id') {
+                    console.log("id is: " + column.value.toString());
+                    res.write(column.value.toString());
+                    res.end();
+                }
+            });
         });
+
+        connection.execSql(request);
     });
-    request.on('requestCompleted', function () {
-        running = false;
-    });
-    running = true;
-    connection.execSql(request);
+
 }
 
 function checkUserForPermission(permissionName, userId, res) {
 
     // Read all rows from table
-    var request = new Request(
-        //Need to return userid from this
-        "SELECT userId FROM UserToPermission userToPermission " +
-        "JOIN Permission permission " +
-        "ON permission.id = userToPermission.permissionId " +
-        "WHERE permission.name = '" + permissionName + "'"
-    );
-
-    request.on('row', function (columns) {
-        var written = false;
-        columns.forEach(function (column) {
-            console.log("%s\t%s", column.metadata.colName, column.value);
-            if (column.metadata.colName == 'userId') {
-                if (column.value == userId) {
-                    res.write("true");
-                    written = true;
-                }
-
-            }
-        });
-        if (!written) {
-            res.write(column.value.toString());
+    pool.acquire(function (err, connection) {
+        if(err) {
+            console.log(err);
         }
-        res.end();
+        var request = new Request(
+            //Need to return userid from this
+            "SELECT userId FROM UserToPermission userToPermission " +
+            "JOIN Permission permission " +
+            "ON permission.id = userToPermission.permissionId " +
+            "WHERE permission.name = '" + permissionName + "'", function (err) {
+                if(err){
+                    console.log(err);
+                }
+                connection.release();
+            });
+
+        request.on('row', function (columns) {
+            var written = false;
+            columns.forEach(function (column) {
+                console.log("%s\t%s", column.metadata.colName, column.value);
+                if (column.metadata.colName == 'userId') {
+                    if (column.value == userId) {
+                        res.write("true");
+                        written = true;
+                    }
+
+                }
+            });
+            if (!written) {
+                res.write("False");
+            }
+            res.end();
+        });
+        connection.execSql(request);
     });
-    request.on('requestCompleted', function () {
-        running = false;
-    });
-    running = true;
-    connection.execSql(request);
+
 }
 
 
