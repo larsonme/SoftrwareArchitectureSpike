@@ -12,17 +12,16 @@
 
     <script>
         function onSignIn(googleUser) {
-            //TODO Query db to see if the user's email is there already.  If so, update token
-            //TODO Otherwise add the user
-            //TODO Change userId to the id we have in the database
-            // var profile = googleUser.getBasicProfile();
-            $.get("homepage.html",
+            var profile = googleUser.getBasicProfile();
+            $.get("userId",
                 {
-                    user: "userid"
+                    userEmail: profile.getEmail(),
+                    userName: profile.getName(),
+                    userToken: googleUser.getAuthResponse().id_token
                 },
             function(data, status){
                 alert(data);
-                // window.location = "homepage.html?userId=" + userId;
+                window.location = "homepage.html?userId=" + data;
             });
 
 
