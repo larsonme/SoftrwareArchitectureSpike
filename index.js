@@ -92,6 +92,9 @@ function checkForUser(email, name, res) {
 
 }
 
+/*
+Returns true if user has permission, false if user does not have permission
+ */
 function checkUserForPermission(permissionName, userId, res) {
 
     pool.acquire(function (err, connection) {
@@ -100,12 +103,19 @@ function checkUserForPermission(permissionName, userId, res) {
         }
         var request = new Request(
             //Need to return userid from this
-            "SELECT userId FROM UserToPermission userToPermission " +
+            "SELECT * FROM UserToPermission userToPermission " +
             "JOIN Permission permission " +
             "ON permission.id = userToPermission.permissionId " +
-            "WHERE permission.name = '" + permissionName + "'", function (err) {
+            "WHERE permission.name = '" + permissionName + "' AND userToPermission.userId ='" + userId + "'", function (err, rowCount, rows) {
                 if (err) {
                     console.log(err);
+                }
+                if (rowCount > 0) {
+                    // User has permission
+                    return true;
+                } else {
+                    // User DOES NOT have permission
+                    return false;
                 }
                 connection.release();
             });
@@ -168,8 +178,29 @@ app.get('/homepage.html', function (req, res) {
     });
 });
 app.get('/permission', function (req, res) {
-    checkUserForPermission(req.query.permissionName, req.query.userId, res);
-
+    let userHasPermission = checkUserForPermission(req.query.permissionName, req.query.userId, res);
+    if (userHasPermission === true) {
+        fs.readFile('./permissionedPage.html', function (err, data) {
+            if (err) {
+                throw err;
+            }
+            res.writeHead(200, {"Content-Type": "text/html"});
+            res.write(data);
+            res.end();
+        });
+    } else if (userHasPermission === false) {
+        fs.readFile('./errorPage.html', function (err, data) {
+            if (err) {
+                throw err;
+            }
+            res.writeHead(200, {"Content-Type": "text/html"});
+            res.write(data);
+            res.end();
+        });
+    }
+    // TODO this should do the fs.readFile permission page if the user has permission
+    // so checkForpermish should return something valuable
+    // if not, render the error page
 });
 app.get('/permissionedPage.html', function (req, res) {
     //Check database for userid and if they have the right permission for this page
