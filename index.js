@@ -13,8 +13,8 @@ var poolConfig = {
 var config =
     {
 
-                        userName: '',
-                        password: '',
+                        userName: 'azureuser',
+                        password: 'Cnnu7jLJ2b',
 
         server: 'softwarearchitecture2019.database.windows.net',
         options:
@@ -111,32 +111,15 @@ function checkUserForPermission(permissionName, userId, res) {
                     console.log(err);
                 }
                 if (rowCount > 0) {
-                    // User has permission
-                    return true;
+                    res.write("permission");
+                    res.end();
                 } else {
-                    // User DOES NOT have permission
-                    return false;
+                    res.write("no");
+                    res.end();
                 }
                 connection.release();
             });
 
-        request.on('row', function (columns) {
-            var written = false;
-            columns.forEach(function (column) {
-                console.log("%s\t%s", column.metadata.colName, column.value);
-                if (column.metadata.colName == 'userId') {
-                    if (column.value == userId) {
-                        res.write("true");
-                        written = true;
-                    }
-
-                }
-            });
-            if (!written) {
-                res.write("False");
-            }
-            res.end();
-        });
         connection.execSql(request);
     });
 
@@ -179,25 +162,26 @@ app.get('/homepage.html', function (req, res) {
 });
 app.get('/permission', function (req, res) {
     let userHasPermission = checkUserForPermission(req.query.permissionName, req.query.userId, res);
-    if (userHasPermission === true) {
-        fs.readFile('./permissionedPage.html', function (err, data) {
-            if (err) {
-                throw err;
-            }
-            res.writeHead(200, {"Content-Type": "text/html"});
-            res.write(data);
-            res.end();
-        });
-    } else if (userHasPermission === false) {
-        fs.readFile('./errorPage.html', function (err, data) {
-            if (err) {
-                throw err;
-            }
-            res.writeHead(200, {"Content-Type": "text/html"});
-            res.write(data);
-            res.end();
-        });
-    }
+    console.log(userHasPermission);
+    // if (userHasPermission === true) {
+    //     fs.readFile('./permissionedPage.html', function (err, data) {
+    //         if (err) {
+    //             throw err;
+    //         }
+    //         res.writeHead(200, {"Content-Type": "text/html"});
+    //         res.write(data);
+    //         res.end();
+    //     });
+    // } else if (userHasPermission === false) {
+    //     fs.readFile('./errorPage.html', function (err, data) {
+    //         if (err) {
+    //             throw err;
+    //         }
+    //         res.writeHead(200, {"Content-Type": "text/html"});
+    //         res.write(data);
+    //         res.end();
+    //     });
+    // }
     // TODO this should do the fs.readFile permission page if the user has permission
     // so checkForpermish should return something valuable
     // if not, render the error page

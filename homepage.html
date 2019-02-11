@@ -20,8 +20,12 @@
                 },
                 function(data, status){
                     alert(data);
+                    if(data == "permission") {
+                        window.location = "permissionedPage.html?userId=" + userId;
+                    } else {
+                        window.location = "errorPage.html";
+                    }
 
-                    window.location = "permission?userId=" + userId;
                 });
 
         }
