@@ -12,9 +12,8 @@ var poolConfig = {
 };
 var config =
     {
-
-                        userName: 'azureuser',
-                        password: 'Cnnu7jLJ2b',
+                        userName: process.env.DB_USERNAME,
+                        password: process.env.DB_PASSWORD,
 
         server: 'softwarearchitecture2019.database.windows.net',
         options:
