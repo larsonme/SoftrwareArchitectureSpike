@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
     <meta charset="UTF-8">
     <title>LoggedIn</title>
     <script>
@@ -9,7 +11,23 @@
         };
 
         function goToPermissionedPage() {
-            window.location = "permissionedPage.html?" + window.location.toString().split("?")[1];
+            var userId = window.location.toString().split("userId=")[1];
+            console.log(userId);
+            $.get("permission",
+                {
+                    permissionName: 'admin',
+                    userId: userId
+                },
+                function(data, status){
+                    alert(data);
+                    if(data == "permission") {
+                        window.location = "permissionedPage.html?userId=" + userId;
+                    } else {
+                        window.location = "errorPage.html";
+                    }
+
+                });
+
         }
     </script>
 

@@ -4,28 +4,32 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
     <meta name="google-signin-client_id"
-          content="ENTER CONTENT KEY HERE">
-    <meta name="google-site-verification" content="sOePc1ausWnsUShRluGqese37YP0QAgR6lQs-wgEmtY"/>
+          content="">
+    <meta name="google-site-verification" content=""/>
+
     <script>
         function onSignIn(googleUser) {
-            //TODO Query db to see if the user's email is there already.  If so, update token
-            //TODO Otherwise add the user
-            //TODO Change userId to the id we have in the database
-            var userId = 0;
             var profile = googleUser.getBasicProfile();
-            console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-            console.log('Name: ' + profile.getName());
-            console.log('Image URL: ' + profile.getImageUrl());
-            console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-            window.location = "homepage.html?userId=" + userId;
+            $.get("userId",
+                {
+                    userEmail: profile.getEmail(),
+                    userName: profile.getName()
+                },
+            function(data, status){
+                window.location = "homepage.html?userId=" + data;
+            });
+
+
 
         }
+
     </script>
 </head>
 <body>
 <div class="g-signin2" data-onsuccess="onSignIn"></div>
-Hello html
 </body>
 
 </html>
